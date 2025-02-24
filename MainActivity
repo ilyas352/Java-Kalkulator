@@ -1,0 +1,125 @@
+package com.example.kalkulator;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
+
+public class MainActivity extends AppCompatActivity {
+    private int[] tombolNumeric = {R.id.enol, R.id.satu, R.id.dua, R.id.dua, R.id.tiga, R.id.empat, R.id.lima, R.id.enam,
+            R.id.tujuh, R.id.delapan, R.id.sembilan};
+    private int[] tombolOperator = {R.id.kali, R.id.bagi, R.id.kurang, R.id.tambah, R.id.AC,};
+    private TextView LayarTampil;
+    private TextView LayarHasil;
+    private boolean angkaTerakhir;
+    private boolean KaloEror;
+    private boolean setelahTitik;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        this.LayarTampil = (TextView) findViewById(R.id.LayarTampil);
+        this.LayarHasil = (TextView) findViewById(R.id.LayarHasil);
+        setNumericPadaSaatDiKlik();
+        setOperatorPadaSaatDiKlik();
+
+    }
+
+
+    private void setNumericPadaSaatDiKlik() {
+        View.OnClickListener listener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Button tombol = (Button) v;
+                if (KaloEror) {
+                    LayarTampil.setText(tombol.getText());
+                    KaloEror = false;
+                } else {
+                    LayarTampil.append(tombol.getText());
+
+                }
+             angkaTerakhir = true;
+            }
+        };
+
+        for (int id : tombolNumeric) {
+            findViewById(id).setOnClickListener(listener);
+        }
+    }
+
+    private void setOperatorPadaSaatDiKlik() {
+        View.OnClickListener listener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (angkaTerakhir && !KaloEror) {
+                    Button tombol = (Button) v;
+                    LayarTampil.append(tombol.getText());
+                    angkaTerakhir = false;
+                    setelahTitik = false;
+                }
+            }
+        };
+
+
+        for (int id : tombolOperator) {
+            findViewById(id).setOnClickListener(listener);
+        }
+        findViewById(R.id.koma).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (angkaTerakhir && !KaloEror && !setelahTitik) {
+                    LayarTampil.append(".");
+                    angkaTerakhir = false;
+                    setelahTitik = true;
+                }
+            }
+
+        });
+        findViewById(R.id.AC).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LayarTampil.setText(" ");
+                LayarHasil.setText(" ");
+                angkaTerakhir = false;
+                KaloEror = false;
+                setelahTitik = false;
+            }
+        });
+
+
+        findViewById(R.id.samadengan).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onEqual();
+            }
+
+
+        });
+    }
+
+    private void onEqual() {
+        if (angkaTerakhir && !KaloEror) {
+            String txt = LayarTampil.getText().toString();
+            Expression expression = new ExpressionBuilder(txt).build();
+            try {
+                double result = expression.evaluate();
+                LayarHasil.setText(Double.toString(result));
+                setelahTitik = true;
+
+            } catch (ArithmeticException ex) {
+                LayarHasil.setText("Eror mas");
+                KaloEror = true;
+                angkaTerakhir = false;
+            }
+        }
+    }
+
+}
+
